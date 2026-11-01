@@ -143,7 +143,17 @@ async function syncNow() {
     status("Saved locally. Sync unavailable: " + e.message);
   }
 }
-button("Sync now", syncNow, $("#search-actions"));
+button(
+  "Clear filters",
+  async () => {
+    for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"]) {
+      $("#" + id).value = "";
+    }
+    await render();
+    $("#query").focus();
+  },
+  $("#search-actions"),
+);
 
 const semanticPanel = el("div", undefined, $("#tools"), "panel");
 semanticPanel.hidden = true;
