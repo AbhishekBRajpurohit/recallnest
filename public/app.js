@@ -98,8 +98,22 @@ export async function render() {
       card,
     );
   }
-  if (!notes.length)
-    el("p", "No notes yet. Save your first thought above.", $("#notes"));
+  if (!notes.length) {
+    const hasFilters = [
+      "query",
+      "folder-filter",
+      "tag-filter",
+      "collection-filter",
+    ].some((id) => $("#" + id).value.trim() !== "");
+
+    el(
+      "p",
+      hasFilters
+        ? "No notes match your filters. Try another search or clear the filters."
+        : "No notes yet. Save your first thought above.",
+      $("#notes"),
+    );
+  }
 }
 form.onsubmit = async (e) => {
   e.preventDefault();
@@ -177,7 +191,7 @@ button(
     const a = await api("/api/ai-status");
     status(
       `AI ${a.enabled ? "enabled" : "disabled"} · ${a.pending} pending. ` +
-        a.errors.map((e) => e.title + ": " + e.ai_error).join("; "),
+      a.errors.map((e) => e.title + ": " + e.ai_error).join("; "),
     );
   },
   $("#search-actions"),
@@ -187,16 +201,16 @@ button(
   async () => {
     const matches = await api(
       "/api/search?" +
-        new URLSearchParams({
-          q: $("#query").value,
-          folder: $("#folder-filter").value,
-          tag: $("#tag-filter").value,
-          collection: $("#collection-filter").value,
-        }),
+      new URLSearchParams({
+        q: $("#query").value,
+        folder: $("#folder-filter").value,
+        tag: $("#tag-filter").value,
+        collection: $("#collection-filter").value,
+      }),
     );
     status(
       "Server FTS matches (synced notes only):\n" +
-        (matches.map((n) => n.title).join("\n") || "None"),
+      (matches.map((n) => n.title).join("\n") || "None"),
     );
   },
   $("#search-actions"),
