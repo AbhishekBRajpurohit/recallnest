@@ -21,7 +21,10 @@ function reset() {
   form.reset();
   $("#editor-title").textContent = "Capture a thought";
 }
-$("#cancel").onclick = reset;
+$("#cancel").onclick = () => {
+  reset();
+  form.elements.namedItem("title").focus();
+};
 $("#tools").innerHTML =
   `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><div id="search-actions"></div></div>`;
 for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"])
