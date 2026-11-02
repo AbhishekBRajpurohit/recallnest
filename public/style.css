@@ -157,3 +157,23 @@ small {
   outline: 3px solid #225f4d;
   outline-offset: 3px;
 }
+
+@media (max-width: 480px) {
+  body {
+    padding: 20px 12px;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  form,
+  .panel,
+  article {
+    padding: 16px;
+  }
+
+  #notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
