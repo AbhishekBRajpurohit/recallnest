@@ -56,6 +56,17 @@ async function deleteNote(note) {
 
 export async function render() {
   const notes = await readNotes();
+
+  let noteCount = $("#note-count");
+  if (!noteCount) {
+    noteCount = el("p", "", $("#tools"), "meta");
+    noteCount.id = "note-count";
+    noteCount.setAttribute("role", "status");
+  }
+
+  noteCount.textContent =
+    `${notes.length} ${notes.length === 1 ? "note" : "notes"} shown`;
+
   $("#notes").replaceChildren();
   for (const n of notes) {
     const card = el("article", undefined, $("#notes"));
