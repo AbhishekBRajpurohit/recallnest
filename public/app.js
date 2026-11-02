@@ -111,7 +111,7 @@ export async function render() {
     button(
       "Delete",
       async () => {
-        if (confirm("Delete this note?")) {
+        if (confirm(`Delete "${n.title}"? This will remove it from your notes.`)) {
           await deleteNote(n);
           await render();
           await syncNow();
