@@ -46,6 +46,11 @@ $("#tools").innerHTML =
   `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><div id="search-actions"></div></div>`;
 for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"])
   $("#" + id).oninput = () => render().catch((e) => status(e.message));
+$("#query").addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  e.target.value = "";
+  render().catch((err) => status(err.message));
+});
 async function readNotes() {
   return filterLocal(
     await allLocal(),
