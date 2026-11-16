@@ -177,3 +177,11 @@ small {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+article:hover {
+  border-color: #38846b;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
