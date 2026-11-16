@@ -23,10 +23,19 @@ form.addEventListener("keydown", (event) => {
     }
   }
 });
+const bodyField = form.elements.namedItem("body");
+const bodyCount = $("#body-count");
+function updateBodyCount() {
+  const max = bodyField.maxLength;
+  bodyCount.textContent = `${bodyField.value.length.toLocaleString()} / ${max.toLocaleString()} characters`;
+}
+bodyField.addEventListener("input", updateBodyCount);
+updateBodyCount();
 function reset() {
   editing = null;
   editingNote = null;
   form.reset();
+  updateBodyCount();
   $("#editor-title").textContent = "Capture a thought";
 }
 $("#cancel").onclick = () => {
