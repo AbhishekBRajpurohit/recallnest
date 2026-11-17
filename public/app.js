@@ -261,6 +261,35 @@ button(
   },
   $("#search-actions"),
 );
+button(
+  "Export as Markdown",
+  async () => {
+    const notes = await readNotes();
+    if (!notes.length) return status("Nothing to export.");
+    const text = notes
+      .map((n) =>
+        [
+          `# ${n.title}`,
+          n.url ? `Source: ${n.url}` : "",
+          [n.folder, n.collection, (n.tags || []).map((t) => "#" + t).join(" ")]
+            .filter(Boolean)
+            .join(" · "),
+          "",
+          n.body,
+        ]
+          .filter((line, i) => i === 3 || line !== "")
+          .join("\n"),
+      )
+      .join("\n\n---\n\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([text], { type: "text/markdown" }));
+    link.download = "second-brain-notes.md";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    status(`Exported ${notes.length} note(s) as Markdown.`);
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
