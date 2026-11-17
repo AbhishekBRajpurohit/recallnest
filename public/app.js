@@ -97,14 +97,24 @@ export async function render() {
       a.target = "_blank";
       a.rel = "noopener noreferrer";
     }
-    el(
-      "p",
-      [n.folder, n.collection, (n.tags || []).map((t) => "#" + t).join(" ")]
-        .filter(Boolean)
-        .join(" · "),
-      card,
-      "meta",
-    );
+    const place = [n.folder, n.collection].filter(Boolean).join(" · ");
+    if (place) el("p", place, card, "meta");
+    if ((n.tags || []).length) {
+      const chips = el("div", undefined, card, "chips");
+      for (const tag of n.tags) {
+        const chip = button(
+          "#" + tag,
+          async () => {
+            $("#tag-filter").value = tag;
+            await render();
+            $("#tag-filter").focus();
+          },
+          chips,
+        );
+        chip.className = "chip secondary";
+        chip.title = `Show notes tagged ${tag}`;
+      }
+    }
     el("p", new Date(n.updated).toLocaleString(), card, "meta");
     button(
       "Edit",
