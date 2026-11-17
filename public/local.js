@@ -115,6 +115,15 @@ export async function localDelete(note) {
     };
   });
 }
+export function readingStats(text) {
+  const words = String(text || "").trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return {
+    words,
+    minutes,
+    label: `${words} ${words === 1 ? "word" : "words"} · ${minutes} min read`,
+  };
+}
 export function filterLocal(notes, q, folder, tag, collection) {
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
   return notes

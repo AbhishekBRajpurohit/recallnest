@@ -7,6 +7,7 @@ import {
   localSave,
   localDelete,
   filterLocal,
+  readingStats,
 } from "./local.js";
 let editing = null,
   editingNote = null;
@@ -115,7 +116,12 @@ export async function render() {
         chip.title = `Show notes tagged ${tag}`;
       }
     }
-    el("p", new Date(n.updated).toLocaleString(), card, "meta");
+    el(
+      "p",
+      `${new Date(n.updated).toLocaleString()} · ${readingStats(n.body).label}`,
+      card,
+      "meta",
+    );
     button(
       "Edit",
       () => {
