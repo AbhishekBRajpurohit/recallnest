@@ -52,6 +52,21 @@ $("#query").addEventListener("keydown", (e) => {
   e.target.value = "";
   render().catch((err) => status(err.message));
 });
+const tagOptions = el("datalist", undefined, $("#tools"));
+tagOptions.id = "tag-options";
+$("#tag-filter").setAttribute("list", "tag-options");
+async function refreshTagOptions() {
+  const tags = new Set();
+  for (const n of await allLocal())
+    if (!n.deleted) for (const t of n.tags || []) tags.add(t);
+  tagOptions.replaceChildren(
+    ...[...tags].sort().map((t) => {
+      const option = document.createElement("option");
+      option.value = t;
+      return option;
+    }),
+  );
+}
 async function readNotes() {
   return filterLocal(
     await allLocal(),
@@ -71,6 +86,7 @@ async function deleteNote(note) {
 
 export async function render() {
   const notes = await readNotes();
+  await refreshTagOptions();
 
   let noteCount = $("#note-count");
   if (!noteCount) {
@@ -135,6 +151,14 @@ export async function render() {
         }
         $("#editor-title").textContent = "Edit note";
         form.scrollIntoView();
+      },
+      card,
+    );
+    button(
+      "Copy",
+      async () => {
+        await navigator.clipboard.writeText(`${n.title}\n\n${n.body}`);
+        status(`Copied "${n.title}" to the clipboard.`);
       },
       card,
     );
