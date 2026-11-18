@@ -44,9 +44,10 @@ $("#cancel").onclick = () => {
   form.elements.namedItem("title").focus();
 };
 $("#tools").innerHTML =
-  `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><div id="search-actions"></div></div>`;
+  `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><label>Updated<select id="date-filter"><option value="0">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></label><div id="search-actions"></div></div>`;
 for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"])
   $("#" + id).oninput = () => render().catch((e) => status(e.message));
+$("#date-filter").onchange = () => render().catch((e) => status(e.message));
 $("#query").addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   e.target.value = "";
@@ -68,14 +69,13 @@ async function refreshTagOptions() {
   );
 }
 async function readNotes() {
-  return filterLocal(
-    await allLocal(),
-    $("#query").value,
-    $("#folder-filter").value,
-    $("#tag-filter").value,
-    $("#collection-filter").value,
-  );
+  const days = Number($("#date-filter").value);
+  const notes = await readMatchingNotes();
+  if (!days) return notes;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return notes.filter((n) => n.updated >= cutoff);
 }
+
 async function writeNote(note) {
   const n = await localSave(note, editing, editingNote);
   return n;
@@ -223,12 +223,11 @@ button(
   "Clear filters",
   async () => {
     for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"]) {
-      $("#" + id).value = "";
-    }
-    await render();
-    $("#query").focus();
-  },
-  $("#search-actions"),
+
+      await render();
+      $("#query").focus();
+    },
+    $("#search-actions"),
 );
 
 const semanticPanel = el("div", undefined, $("#tools"), "panel");
