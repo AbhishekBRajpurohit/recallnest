@@ -251,3 +251,16 @@ button.chip:hover {
     outline-color: #6fc4a6;
   }
 }
+
+mark {
+  background: #ffe8a3;
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  mark {
+    background: #5c4b12;
+  }
+}

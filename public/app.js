@@ -84,6 +84,20 @@ async function deleteNote(note) {
   return localDelete(note);
 }
 
+function highlight(parent, text) {
+  const words = $("#query").value.split(/\s+/).filter(Boolean);
+  if (!words.length) {
+    parent.textContent = text;
+    return parent;
+  }
+  const escaped = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const pattern = new RegExp(`(${escaped.join("|")})`, "gi");
+  for (const [i, part] of text.split(pattern).entries())
+    if (i % 2) el("mark", part, parent);
+    else parent.append(part);
+  return parent;
+}
+
 export async function render() {
   const notes = await readNotes();
   await refreshTagOptions();
@@ -101,8 +115,8 @@ export async function render() {
   $("#notes").replaceChildren();
   for (const n of notes) {
     const card = el("article", undefined, $("#notes"));
-    el("h2", n.title, card);
-    el("p", n.body, card);
+    highlight(el("h2", undefined, card), n.title);
+    highlight(el("p", undefined, card), n.body);
     if (n.summary) {
       el("small", "AI summary — check against the source", card);
       el("p", n.summary, card);
