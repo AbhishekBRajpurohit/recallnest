@@ -365,6 +365,36 @@ button(
   },
   $("#search-actions"),
 );
+const statsPanel = el("div", undefined, $("#tools"), "panel");
+statsPanel.hidden = true;
+button(
+  "Show stats",
+  async () => {
+    statsPanel.hidden = !statsPanel.hidden;
+    if (statsPanel.hidden) return;
+    const notes = (await allLocal()).filter((n) => !n.deleted);
+    const words = notes.reduce(
+      (sum, n) => sum + (n.body || "").trim().split(/\s+/).filter(Boolean).length,
+      0,
+    );
+    const counts = {};
+    for (const n of notes)
+      for (const tag of n.tags || []) counts[tag] = (counts[tag] || 0) + 1;
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    statsPanel.replaceChildren();
+    el("h2", "Your second brain", statsPanel);
+    el("p", `${notes.length} notes · ${words.toLocaleString()} words`, statsPanel);
+    el(
+      "p",
+      top.length
+        ? "Top tags: " + top.map(([t, c]) => `#${t} (${c})`).join(", ")
+        : "No tags yet.",
+      statsPanel,
+      "meta",
+    );
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
