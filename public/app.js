@@ -395,6 +395,19 @@ button(
   },
   $("#search-actions"),
 );
+el("small", "Shortcuts: / search · n new note · Ctrl+Enter save", $("#tools"), "meta");
+document.addEventListener("keydown", (event) => {
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
+  if (event.key === "/") {
+    event.preventDefault();
+    $("#query").focus();
+  } else if (event.key === "n") {
+    event.preventDefault();
+    reset();
+    form.elements.namedItem("title").focus();
+  }
+});
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
