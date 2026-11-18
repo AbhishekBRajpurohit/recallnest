@@ -36,6 +36,7 @@ function reset() {
   editing = null;
   editingNote = null;
   form.reset();
+  clearDraft();
   updateBodyCount();
   $("#editor-title").textContent = "Capture a thought";
 }
@@ -43,6 +44,27 @@ $("#cancel").onclick = () => {
   reset();
   form.elements.namedItem("title").focus();
 };
+const DRAFT_KEY = "second-brain-draft";
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY);
+  } catch { }
+}
+form.addEventListener("input", () => {
+  if (editing) return;
+  try {
+    const draft = Object.fromEntries(new FormData(form));
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch { }
+});
+try {
+  const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null");
+  if (draft) {
+    for (const [name, value] of Object.entries(draft))
+      if (form.elements.namedItem(name)) form.elements.namedItem(name).value = value;
+    status("Restored your unsaved draft.");
+  }
+} catch { }
 $("#tools").innerHTML =
   `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><label>Updated<select id="date-filter"><option value="0">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></label><div id="search-actions"></div></div>`;
 for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"])
