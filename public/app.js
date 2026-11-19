@@ -408,6 +408,31 @@ document.addEventListener("keydown", (event) => {
     form.elements.namedItem("title").focus();
   }
 });
+button(
+  "Export as JSON",
+  async () => {
+    const notes = await readNotes();
+    if (!notes.length) return status("Nothing to export.");
+    const data = notes.map((n) => ({
+      title: n.title,
+      body: n.body,
+      url: n.url || "",
+      folder: n.folder || "",
+      collection: n.collection || "",
+      tags: n.tags || [],
+      updated: new Date(n.updated).toISOString(),
+    }));
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+    );
+    link.download = "second-brain-notes.json";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    status(`Exported ${notes.length} note(s) as JSON.`);
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
