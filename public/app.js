@@ -408,28 +408,33 @@ document.addEventListener("keydown", (event) => {
     form.elements.namedItem("title").focus();
   }
 });
+const tagPanel = el("div", undefined, $("#tools"), "panel");
+tagPanel.hidden = true;
 button(
-  "Export as JSON",
+  "Browse tags",
   async () => {
-    const notes = await readNotes();
-    if (!notes.length) return status("Nothing to export.");
-    const data = notes.map((n) => ({
-      title: n.title,
-      body: n.body,
-      url: n.url || "",
-      folder: n.folder || "",
-      collection: n.collection || "",
-      tags: n.tags || [],
-      updated: new Date(n.updated).toISOString(),
-    }));
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
-    );
-    link.download = "second-brain-notes.json";
-    link.click();
-    URL.revokeObjectURL(link.href);
-    status(`Exported ${notes.length} note(s) as JSON.`);
+    tagPanel.hidden = !tagPanel.hidden;
+    if (tagPanel.hidden) return;
+    const counts = new Map();
+    for (const n of await allLocal())
+      if (!n.deleted)
+        for (const tag of n.tags || [])
+          counts.set(tag, (counts.get(tag) || 0) + 1);
+    tagPanel.replaceChildren();
+    el("h2", "Browse by tag", tagPanel);
+    if (!counts.size) el("p", "No tags yet. Add some when saving a note.", tagPanel);
+    const chips = el("div", undefined, tagPanel, "chips");
+    for (const [tag, count] of [...counts].sort((a, b) => b[1] - a[1])) {
+      const chip = button(
+        `#${tag} (${count})`,
+        async () => {
+          $("#tag-filter").value = tag;
+          await render();
+        },
+        chips,
+      );
+      chip.className = "chip secondary";
+    }
   },
   $("#search-actions"),
 );
