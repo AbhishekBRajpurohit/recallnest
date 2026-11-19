@@ -429,6 +429,30 @@ form.addEventListener("keydown", (event) => {
   }
 });
 updateEditorHints();
+const netBadge = el("small", "", undefined, "meta");
+$("#status").after(netBadge);
+function showNetwork() {
+  netBadge.textContent = navigator.onLine
+    ? "● Online — changes sync automatically"
+    : "○ Offline — notes are saved on this device";
+}
+window.addEventListener("offline", showNetwork);
+window.addEventListener("online", showNetwork);
+showNetwork();
+let formDirty = false;
+form.addEventListener("input", () => (formDirty = true));
+form.addEventListener("reset", () => (formDirty = false));
+window.addEventListener("beforeunload", (event) => {
+  if (formDirty) event.preventDefault();
+});
+button(
+  "Sync now",
+  async () => {
+    status("Syncing…");
+    await syncNow();
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
