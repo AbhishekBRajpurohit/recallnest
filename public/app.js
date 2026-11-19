@@ -453,6 +453,31 @@ button(
   },
   $("#search-actions"),
 );
+const randomPanel = el("div", undefined, $("#tools"), "panel");
+randomPanel.hidden = true;
+async function showRandomNote() {
+  const notes = (await allLocal()).filter((n) => !n.deleted);
+  randomPanel.hidden = false;
+  randomPanel.replaceChildren();
+  el("h2", "Surprise me", randomPanel);
+  if (!notes.length)
+    return el("p", "No notes yet. Save your first thought.", randomPanel);
+  const n = notes[Math.floor(Math.random() * notes.length)];
+  const body = n.body || "";
+  el("h3", n.title, randomPanel);
+  el("p", body.slice(0, 300) + (body.length > 300 ? "…" : ""), randomPanel);
+  button(
+    "Show this note",
+    async () => {
+      $("#query").value = n.title;
+      await render();
+      $("#notes").scrollIntoView();
+    },
+    randomPanel,
+  );
+  button("Another one", showRandomNote, randomPanel);
+}
+button("Surprise me", showRandomNote, $("#search-actions"));
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
