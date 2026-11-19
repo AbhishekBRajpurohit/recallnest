@@ -408,36 +408,27 @@ document.addEventListener("keydown", (event) => {
     form.elements.namedItem("title").focus();
   }
 });
-const tagPanel = el("div", undefined, $("#tools"), "panel");
-tagPanel.hidden = true;
-button(
-  "Browse tags",
-  async () => {
-    tagPanel.hidden = !tagPanel.hidden;
-    if (tagPanel.hidden) return;
-    const counts = new Map();
-    for (const n of await allLocal())
-      if (!n.deleted)
-        for (const tag of n.tags || [])
-          counts.set(tag, (counts.get(tag) || 0) + 1);
-    tagPanel.replaceChildren();
-    el("h2", "Browse by tag", tagPanel);
-    if (!counts.size) el("p", "No tags yet. Add some when saving a note.", tagPanel);
-    const chips = el("div", undefined, tagPanel, "chips");
-    for (const [tag, count] of [...counts].sort((a, b) => b[1] - a[1])) {
-      const chip = button(
-        `#${tag} (${count})`,
-        async () => {
-          $("#tag-filter").value = tag;
-          await render();
-        },
-        chips,
-      );
-      chip.className = "chip secondary";
-    }
-  },
-  $("#search-actions"),
-);
+const noteBody = form.elements.namedItem("body");
+const noteWords = el("small", "", noteBody.parentElement, "meta");
+function updateEditorHints() {
+  const words = noteBody.value.trim().split(/\s+/).filter(Boolean).length;
+  noteWords.textContent = `${words} ${words === 1 ? "word" : "words"}`;
+  noteBody.style.height = "auto";
+  noteBody.style.height = Math.min(noteBody.scrollHeight, 400) + "px";
+}
+noteBody.addEventListener("input", updateEditorHints);
+form.addEventListener("reset", () => setTimeout(updateEditorHints));
+document.addEventListener("click", (event) => {
+  if (event.target.closest("article") && event.target.textContent === "Edit")
+    setTimeout(updateEditorHints);
+});
+form.addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    form.requestSubmit();
+  }
+});
+updateEditorHints();
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
