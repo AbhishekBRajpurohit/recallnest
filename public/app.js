@@ -478,6 +478,29 @@ async function showRandomNote() {
   button("Another one", showRandomNote, randomPanel);
 }
 button("Surprise me", showRandomNote, $("#search-actions"));
+button(
+  "Copy visible notes",
+  async () => {
+    const notes = await readNotes();
+    if (!notes.length) return status("Nothing to copy.");
+    const header = `Second Brain · ${notes.length} note(s) · ${new Date().toLocaleDateString()}`;
+    const text = notes
+      .map((n) => {
+        const tags = (n.tags || []).map((t) => "#" + t).join(" ");
+        return [n.title, tags, "", n.body]
+          .filter((line, i) => i === 2 || line)
+          .join("\n");
+      })
+      .join("\n\n----------\n\n");
+    try {
+      await navigator.clipboard.writeText(header + "\n\n" + text);
+      status(`Copied ${notes.length} note(s) to the clipboard.`);
+    } catch {
+      status("Clipboard access was blocked by the browser.");
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
