@@ -501,6 +501,32 @@ button(
   },
   $("#search-actions"),
 );
+const activityPanel = el("div", undefined, $("#tools"), "panel");
+activityPanel.hidden = true;
+button(
+  "Show activity",
+  async () => {
+    activityPanel.hidden = !activityPanel.hidden;
+    if (activityPanel.hidden) return;
+    const notes = (await allLocal()).filter((n) => !n.deleted);
+    activityPanel.replaceChildren();
+    el("h2", "Notes updated in the last 7 days", activityPanel);
+    for (let i = 0; i < 7; i++) {
+      const day = new Date();
+      day.setHours(0, 0, 0, 0);
+      day.setDate(day.getDate() - i);
+      const start = day.getTime();
+      const count = notes.filter(
+        (n) => n.updated >= start && n.updated < start + 86400000,
+      ).length;
+      const label =
+        i === 0 ? "Today" : day.toLocaleDateString(undefined, { weekday: "long" });
+      const bar = "█".repeat(Math.min(count, 30));
+      el("p", `${label}: ${bar} ${count}`, activityPanel, "meta");
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
