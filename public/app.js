@@ -552,6 +552,31 @@ button(
   () => (fontPercent = applyFontSize(fontPercent + 10)),
   $("#search-actions"),
 );
+const FONT_KEY = "second-brain-font";
+function applyFontSize(percent) {
+  const size = Math.min(150, Math.max(80, percent));
+  document.body.style.zoom = size / 100;
+  try {
+    localStorage.setItem(FONT_KEY, String(size));
+  } catch { }
+  status(`Text size: ${size}%`);
+  return size;
+}
+let fontPercent = 100;
+try {
+  fontPercent = Number(localStorage.getItem(FONT_KEY)) || 100;
+} catch { }
+document.body.style.zoom = fontPercent / 100;
+button(
+  "A−",
+  () => (fontPercent = applyFontSize(fontPercent - 10)),
+  $("#search-actions"),
+);
+button(
+  "A+",
+  () => (fontPercent = applyFontSize(fontPercent + 10)),
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
