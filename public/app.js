@@ -577,6 +577,68 @@ button(
   () => (fontPercent = applyFontSize(fontPercent + 10)),
   $("#search-actions"),
 );
+const dupPanel = el("div", undefined, $("#tools"), "panel");
+dupPanel.hidden = true;
+button(
+  "Find duplicates",
+  async () => {
+    dupPanel.hidden = !dupPanel.hidden;
+    if (dupPanel.hidden) return;
+    const groups = new Map();
+    for (const n of await allLocal()) {
+      if (n.deleted) continue;
+      const key = n.title.trim().toLowerCase();
+      groups.set(key, [...(groups.get(key) || []), n]);
+    }
+    const dups = [...groups.values()].filter((g) => g.length > 1);
+    dupPanel.replaceChildren();
+    el("h2", "Duplicate titles", dupPanel);
+    if (!dups.length) el("p", "No duplicate titles found.", dupPanel);
+    for (const group of dups) {
+      el("p", `${group[0].title} × ${group.length}`, dupPanel, "meta");
+      button(
+        "Show",
+        async () => {
+          $("#query").value = group[0].title;
+          await render();
+        },
+        dupPanel,
+      );
+    }
+  },
+  $("#search-actions"),
+);
+const dupPanel = el("div", undefined, $("#tools"), "panel");
+dupPanel.hidden = true;
+button(
+  "Find duplicates",
+  async () => {
+    dupPanel.hidden = !dupPanel.hidden;
+    if (dupPanel.hidden) return;
+    const groups = new Map();
+    for (const n of await allLocal()) {
+      if (n.deleted) continue;
+      const key = n.title.trim().toLowerCase();
+      groups.set(key, [...(groups.get(key) || []), n]);
+    }
+    const dups = [...groups.values()].filter((g) => g.length > 1);
+    dupPanel.replaceChildren();
+    el("h2", "Duplicate titles", dupPanel);
+    if (!dups.length) el("p", "No duplicate titles found.", dupPanel);
+    for (const group of dups) {
+      el("p", `${group[0].title} × ${group.length}`, dupPanel, "meta");
+      button(
+        "Show",
+        async () => {
+          $("#query").value = group[0].title;
+          await render();
+        },
+        dupPanel,
+      );
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
