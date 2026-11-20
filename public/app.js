@@ -639,6 +639,35 @@ button(
   },
   $("#search-actions"),
 );
+const untaggedPanel = el("div", undefined, $("#tools"), "panel");
+untaggedPanel.hidden = true;
+button(
+  "Untagged notes",
+  async () => {
+    untaggedPanel.hidden = !untaggedPanel.hidden;
+    if (untaggedPanel.hidden) return;
+    const notes = (await allLocal()).filter(
+      (n) => !n.deleted && !(n.tags || []).length,
+    );
+    untaggedPanel.replaceChildren();
+    el("h2", `Notes without tags (${notes.length})`, untaggedPanel);
+    if (!notes.length) el("p", "Every note has a tag. Nice and tidy.", untaggedPanel);
+    for (const n of notes.slice(0, 10)) {
+      el("p", n.title, untaggedPanel, "meta");
+      button(
+        "Find",
+        async () => {
+          $("#query").value = n.title;
+          await render();
+        },
+        untaggedPanel,
+      );
+    }
+    if (notes.length > 10)
+      el("p", `…and ${notes.length - 10} more.`, untaggedPanel, "meta");
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
