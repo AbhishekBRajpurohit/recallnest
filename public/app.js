@@ -808,6 +808,36 @@ button(
   },
   $("#search-actions"),
 );
+const folderPanel = el("div", undefined, $("#tools"), "panel");
+folderPanel.hidden = true;
+button(
+  "Browse folders",
+  async () => {
+    folderPanel.hidden = !folderPanel.hidden;
+    if (folderPanel.hidden) return;
+    const counts = new Map();
+    for (const n of await allLocal()) {
+      if (n.deleted) continue;
+      const folder = n.folder || "(no folder)";
+      counts.set(folder, (counts.get(folder) || 0) + 1);
+    }
+    folderPanel.replaceChildren();
+    el("h2", "Browse by folder", folderPanel);
+    const chips = el("div", undefined, folderPanel, "chips");
+    for (const [folder, count] of [...counts].sort()) {
+      const chip = button(
+        `${folder} (${count})`,
+        async () => {
+          $("#folder-filter").value = folder === "(no folder)" ? "" : folder;
+          await render();
+        },
+        chips,
+      );
+      chip.className = "chip secondary";
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
