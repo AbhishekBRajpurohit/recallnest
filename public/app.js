@@ -838,6 +838,28 @@ button(
   },
   $("#search-actions"),
 );
+const topButton = button(
+  "↑ Top",
+  () => window.scrollTo({ top: 0, behavior: "smooth" }),
+  document.body,
+);
+topButton.title = "Back to top";
+topButton.setAttribute("aria-label", "Back to top");
+Object.assign(topButton.style, {
+  position: "fixed",
+  right: "16px",
+  bottom: "16px",
+  display: "none",
+  zIndex: "10",
+  boxShadow: "0 2px 8px rgba(0,0,0,.25)",
+});
+window.addEventListener(
+  "scroll",
+  () => {
+    topButton.style.display = window.scrollY > 400 ? "block" : "none";
+  },
+  { passive: true },
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
