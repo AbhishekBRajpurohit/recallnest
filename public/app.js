@@ -860,6 +860,36 @@ window.addEventListener(
   },
   { passive: true },
 );
+const dayPanel = el("div", undefined, $("#tools"), "panel");
+dayPanel.hidden = true;
+button(
+  "Note of the day",
+  async () => {
+    dayPanel.hidden = !dayPanel.hidden;
+    if (dayPanel.hidden) return;
+    const notes = (await allLocal())
+      .filter((n) => !n.deleted)
+      .sort((a, b) => a.created - b.created);
+    dayPanel.replaceChildren();
+    el("h2", "Note of the day", dayPanel);
+    if (!notes.length) return el("p", "Save a note to see one here.", dayPanel);
+    const today = new Date();
+    const seed = today.getFullYear() * 372 + today.getMonth() * 31 + today.getDate();
+    const n = notes[seed % notes.length];
+    el("h3", n.title, dayPanel);
+    el("p", (n.body || "").slice(0, 300), dayPanel);
+    button(
+      "Open",
+      async () => {
+        $("#query").value = n.title;
+        await render();
+        $("#notes").scrollIntoView();
+      },
+      dayPanel,
+    );
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
