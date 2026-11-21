@@ -890,6 +890,37 @@ button(
   },
   $("#search-actions"),
 );
+const STOP_WORDS = new Set("that with this from have your were been than then also just will what when which would could should their there them they into about because".split(" "));
+const wordsPanel = el("div", undefined, $("#tools"), "panel");
+wordsPanel.hidden = true;
+button(
+  "Top words",
+  async () => {
+    wordsPanel.hidden = !wordsPanel.hidden;
+    if (wordsPanel.hidden) return;
+    const counts = new Map();
+    for (const n of await allLocal())
+      for (const word of `${n.title} ${n.body || ""}`.toLowerCase().match(/[a-z]{4,}/g) || [])
+        if (!n.deleted && !STOP_WORDS.has(word))
+          counts.set(word, (counts.get(word) || 0) + 1);
+    const top = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    wordsPanel.replaceChildren();
+    el("h2", top.length ? "Most used words" : "Not enough text yet", wordsPanel);
+    const chips = el("div", undefined, wordsPanel, "chips");
+    for (const [word, count] of top) {
+      const chip = button(
+        `${word} (${count})`,
+        async () => {
+          $("#query").value = word;
+          await render();
+        },
+        chips,
+      );
+      chip.className = "chip secondary";
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
