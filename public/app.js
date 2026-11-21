@@ -668,6 +668,66 @@ button(
   },
   $("#search-actions"),
 );
+const longestPanel = el("div", undefined, $("#tools"), "panel");
+longestPanel.hidden = true;
+button(
+  "Longest notes",
+  async () => {
+    longestPanel.hidden = !longestPanel.hidden;
+    if (longestPanel.hidden) return;
+    const words = (text) => (text || "").trim().split(/\s+/).filter(Boolean).length;
+    const top = (await allLocal())
+      .filter((n) => !n.deleted)
+      .map((n) => ({ note: n, count: words(n.body) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    longestPanel.replaceChildren();
+    el("h2", "Your 5 longest notes", longestPanel);
+    if (!top.length) el("p", "No notes yet.", longestPanel);
+    for (const { note, count } of top) {
+      el("p", `${note.title} — ${count} words`, longestPanel, "meta");
+      button(
+        "Show",
+        async () => {
+          $("#query").value = note.title;
+          await render();
+        },
+        longestPanel,
+      );
+    }
+  },
+  $("#search-actions"),
+);
+const longestPanel = el("div", undefined, $("#tools"), "panel");
+longestPanel.hidden = true;
+button(
+  "Longest notes",
+  async () => {
+    longestPanel.hidden = !longestPanel.hidden;
+    if (longestPanel.hidden) return;
+    const words = (text) => (text || "").trim().split(/\s+/).filter(Boolean).length;
+    const top = (await allLocal())
+      .filter((n) => !n.deleted)
+      .map((n) => ({ note: n, count: words(n.body) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    longestPanel.replaceChildren();
+    el("h2", "Your 5 longest notes", longestPanel);
+    if (!top.length) el("p", "No notes yet.", longestPanel);
+    for (const { note, count } of top) {
+      el("p", `${note.title} — ${count} words`, longestPanel, "meta");
+      button(
+        "Show",
+        async () => {
+          $("#query").value = note.title;
+          await render();
+        },
+        longestPanel,
+      );
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
