@@ -778,6 +778,36 @@ button(
   },
   $("#search-actions"),
 );
+const reviewPanel = el("div", undefined, $("#tools"), "panel");
+reviewPanel.hidden = true;
+button(
+  "Review queue",
+  async () => {
+    reviewPanel.hidden = !reviewPanel.hidden;
+    if (reviewPanel.hidden) return;
+    const oldest = (await allLocal())
+      .filter((n) => !n.deleted)
+      .sort((a, b) => a.updated - b.updated)
+      .slice(0, 5);
+    reviewPanel.replaceChildren();
+    el("h2", "Notes you have not touched in a while", reviewPanel);
+    if (!oldest.length) el("p", "Nothing to review yet.", reviewPanel);
+    for (const n of oldest) {
+      const days = Math.floor((Date.now() - n.updated) / 86400000);
+      el("p", `${n.title} — updated ${days} day(s) ago`, reviewPanel, "meta");
+      button(
+        "Open",
+        async () => {
+          $("#query").value = n.title;
+          await render();
+          $("#notes").scrollIntoView();
+        },
+        reviewPanel,
+      );
+    }
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
