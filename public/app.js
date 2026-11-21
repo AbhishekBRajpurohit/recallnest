@@ -921,6 +921,36 @@ button(
   },
   $("#search-actions"),
 );
+const HISTORY_KEY = "second-brain-searches";
+const historyBox = el("div", undefined, undefined, "chips");
+$("#query").parentElement.after(historyBox);
+function loadHistory() {
+  return JSON.parse(sessionStorage.getItem(HISTORY_KEY) || "[]");
+}
+function showHistory() {
+  historyBox.replaceChildren();
+  for (const term of loadHistory()) {
+    const chip = button(
+      term,
+      async () => {
+        $("#query").value = term;
+        await render();
+      },
+      historyBox,
+    );
+    chip.className = "chip secondary";
+  }
+}
+$("#query").addEventListener("keydown", (event) => {
+  const term = event.target.value.trim();
+  if (event.key !== "Enter" || !term) return;
+  const history = [term, ...loadHistory().filter((t) => t !== term)].slice(0, 5);
+  try {
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch { }
+  showHistory();
+});
+showHistory();
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
