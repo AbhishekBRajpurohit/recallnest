@@ -728,6 +728,56 @@ button(
   },
   $("#search-actions"),
 );
+const linksPanel = el("div", undefined, $("#tools"), "panel");
+linksPanel.hidden = true;
+button(
+  "Saved links",
+  async () => {
+    linksPanel.hidden = !linksPanel.hidden;
+    if (linksPanel.hidden) return;
+    const linked = (await allLocal()).filter(
+      (n) => !n.deleted && /^https?:\/\//i.test(n.url || ""),
+    );
+    linksPanel.replaceChildren();
+    el("h2", `Notes with a source link (${linked.length})`, linksPanel);
+    if (!linked.length) el("p", "No notes have a source URL yet.", linksPanel);
+    for (const n of linked.slice(0, 15)) {
+      const row = el("p", undefined, linksPanel, "meta");
+      const link = el("a", n.title, row);
+      link.href = n.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+    if (linked.length > 15)
+      el("p", `…and ${linked.length - 15} more.`, linksPanel, "meta");
+  },
+  $("#search-actions"),
+);
+const linksPanel = el("div", undefined, $("#tools"), "panel");
+linksPanel.hidden = true;
+button(
+  "Saved links",
+  async () => {
+    linksPanel.hidden = !linksPanel.hidden;
+    if (linksPanel.hidden) return;
+    const linked = (await allLocal()).filter(
+      (n) => !n.deleted && /^https?:\/\//i.test(n.url || ""),
+    );
+    linksPanel.replaceChildren();
+    el("h2", `Notes with a source link (${linked.length})`, linksPanel);
+    if (!linked.length) el("p", "No notes have a source URL yet.", linksPanel);
+    for (const n of linked.slice(0, 15)) {
+      const row = el("p", undefined, linksPanel, "meta");
+      const link = el("a", n.title, row);
+      link.href = n.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+    if (linked.length > 15)
+      el("p", `…and ${linked.length - 15} more.`, linksPanel, "meta");
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
