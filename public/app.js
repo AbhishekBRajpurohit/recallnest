@@ -951,6 +951,48 @@ $("#query").addEventListener("keydown", (event) => {
   showHistory();
 });
 showHistory();
+el(
+  "style",
+  `@page { margin: 14mm; }
+@media print {
+  h2 { font-size: 18px; margin: 0 0 6px; }
+  #tools, #workspace, #status, button, .chips { display: none !important; }
+  :root, body { background: #fff !important; color: #000 !important; }
+  article { background: #fff !important; color: #000 !important; break-inside: avoid; border: 1px solid #999; }
+}`,
+  document.head,
+);
+button(
+  "Print notes",
+  async () => {
+    const notes = await readNotes();
+    if (!notes.length) return status("Nothing to print.");
+    status(`Printing ${notes.length} note(s)…`);
+    window.print();
+  },
+  $("#search-actions"),
+);
+el(
+  "style",
+  `@page { margin: 14mm; }
+@media print {
+  h2 { font-size: 18px; margin: 0 0 6px; }
+  #tools, #workspace, #status, button, .chips { display: none !important; }
+  :root, body { background: #fff !important; color: #000 !important; }
+  article { background: #fff !important; color: #000 !important; break-inside: avoid; border: 1px solid #999; }
+}`,
+  document.head,
+);
+button(
+  "Print notes",
+  async () => {
+    const notes = await readNotes();
+    if (!notes.length) return status("Nothing to print.");
+    status(`Printing ${notes.length} note(s)…`);
+    window.print();
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
