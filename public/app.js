@@ -1063,6 +1063,30 @@ button("Save this search", () => {
   status(`Saved search "${name}".`);
 }, $("#search-actions"));
 showViews();
+el(
+  "style",
+  `#notes.compact article { padding-top: 8px; padding-bottom: 8px; }
+#notes.compact article h2 { font-size: 16px; margin: 0 0 4px; }
+#notes.compact article > p:not(.meta) { display: none; }`,
+  document.head,
+);
+const COMPACT_KEY = "second-brain-compact";
+function setCompact(on, announce) {
+  $("#notes").classList.toggle("compact", on);
+  compactButton.textContent = on ? "Full view" : "Compact view";
+  if (announce) status(on ? "Compact view: titles only." : "Full view.");
+  try {
+    localStorage.setItem(COMPACT_KEY, on ? "1" : "0");
+  } catch { }
+}
+const compactButton = button(
+  "Compact view",
+  () => setCompact(!$("#notes").classList.contains("compact"), true),
+  $("#search-actions"),
+);
+try {
+  setCompact(localStorage.getItem(COMPACT_KEY) === "1", false);
+} catch { }
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
