@@ -1087,6 +1087,28 @@ const compactButton = button(
 try {
   setCompact(localStorage.getItem(COMPACT_KEY) === "1", false);
 } catch { }
+el(
+  "small",
+  "Tip: double-click a note to edit it · press Esc in the editor to clear it",
+  $("#tools"),
+  "meta",
+);
+$("#notes").addEventListener("dblclick", (event) => {
+  const card = event.target.closest("article");
+  if (!card || event.target.closest("button, a")) return;
+  const edit = [...card.querySelectorAll("button")].find(
+    (b) => b.textContent === "Edit",
+  );
+  if (edit) edit.click();
+});
+form.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  const typed =
+    form.elements.namedItem("title").value || form.elements.namedItem("body").value;
+  if (typed && !confirm("Discard what you typed?")) return;
+  reset();
+  status("Editor cleared.");
+});
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
