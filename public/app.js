@@ -993,6 +993,27 @@ button(
   },
   $("#search-actions"),
 );
+button(
+  "Paste as note",
+  async () => {
+    let text = "";
+    try {
+      text = (await navigator.clipboard.readText()).trim();
+    } catch {
+      return status("Clipboard access was blocked by the browser.");
+    }
+    if (!text) return status("The clipboard is empty.");
+    const [first, ...rest] = text.split("\n");
+    reset();
+    const body = form.elements.namedItem("body");
+    form.elements.namedItem("title").value = first.trim().slice(0, 120);
+    body.value = (rest.join("\n") || first).trim();
+    body.dispatchEvent(new Event("input", { bubbles: true }));
+    form.scrollIntoView();
+    status("Pasted from the clipboard. Review it and press Save note.");
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
