@@ -1014,6 +1014,28 @@ button(
   },
   $("#search-actions"),
 );
+function insertAtCursor(text) {
+  const field = form.elements.namedItem("body");
+  field.setRangeText(text, field.selectionStart, field.selectionEnd, "end");
+  field.focus();
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+}
+const editorTools = el("div", undefined, undefined, "chips");
+form.elements.namedItem("body").parentElement.after(editorTools);
+const snippets = [
+  ["+ Date", () => new Date().toLocaleDateString() + " "],
+  [
+    "+ Time",
+    () =>
+      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + " ",
+  ],
+  ["+ Bullet", () => "\n- "],
+  ["+ Checklist", () => "\n- [ ] "],
+];
+for (const [label, make] of snippets) {
+  const chip = button(label, () => insertAtCursor(make()), editorTools);
+  chip.className = "chip secondary";
+}
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
