@@ -1036,6 +1036,33 @@ for (const [label, make] of snippets) {
   const chip = button(label, () => insertAtCursor(make()), editorTools);
   chip.className = "chip secondary";
 }
+const VIEWS_KEY = "second-brain-views";
+const filterIds = ["query", "folder-filter", "tag-filter", "collection-filter", "date-filter"].filter((id) => $("#" + id));
+const viewsBox = el("div", undefined, undefined, "chips");
+$("#search-actions").after(viewsBox);
+function loadViews() {
+  try { return JSON.parse(localStorage.getItem(VIEWS_KEY) || "[]"); } catch { return []; }
+}
+function showViews() {
+  viewsBox.replaceChildren();
+  for (const view of loadViews()) {
+    const chip = button(`★ ${view.name}`, async () => {
+      for (const id of filterIds) $("#" + id).value = view.values[id] || "";
+      await render();
+    }, viewsBox);
+    chip.className = "chip secondary";
+  }
+}
+button("Save this search", () => {
+  const values = Object.fromEntries(filterIds.map((id) => [id, $("#" + id).value]));
+  const name = prompt("Name this search:", values.query || "My search");
+  if (!name) return;
+  const views = [...loadViews().filter((v) => v.name !== name), { name, values }];
+  try { localStorage.setItem(VIEWS_KEY, JSON.stringify(views.slice(-8))); } catch { }
+  showViews();
+  status(`Saved search "${name}".`);
+}, $("#search-actions"));
+showViews();
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
