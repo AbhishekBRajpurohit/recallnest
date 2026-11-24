@@ -51,7 +51,8 @@ button {
 }
 
 input,
-textarea {
+textarea,
+select {
   background: white;
   width: 100%;
   margin: 5px 0 12px;
@@ -263,4 +264,20 @@ mark {
   mark {
     background: #5c4b12;
   }
+}
+
+#search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+#search-actions button {
+  margin: 0;
+}
+
+.panel h2:first-child {
+  margin-top: 0;
 }
