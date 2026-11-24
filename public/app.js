@@ -564,62 +564,6 @@ button(
   () => (fontPercent = applyFontSize(fontPercent + 10)),
   $("#search-actions"),
 );
-const FONT_KEY = "second-brain-font";
-function applyFontSize(percent) {
-  const size = Math.min(150, Math.max(80, percent));
-  document.body.style.zoom = size / 100;
-  try {
-    localStorage.setItem(FONT_KEY, String(size));
-  } catch { }
-  status(`Text size: ${size}%`);
-  return size;
-}
-let fontPercent = 100;
-try {
-  fontPercent = Number(localStorage.getItem(FONT_KEY)) || 100;
-} catch { }
-document.body.style.zoom = fontPercent / 100;
-button(
-  "A−",
-  () => (fontPercent = applyFontSize(fontPercent - 10)),
-  $("#search-actions"),
-);
-button(
-  "A+",
-  () => (fontPercent = applyFontSize(fontPercent + 10)),
-  $("#search-actions"),
-);
-const dupPanel = el("div", undefined, $("#tools"), "panel");
-dupPanel.hidden = true;
-button(
-  "Find duplicates",
-  async () => {
-    dupPanel.hidden = !dupPanel.hidden;
-    if (dupPanel.hidden) return;
-    const groups = new Map();
-    for (const n of await allLocal()) {
-      if (n.deleted) continue;
-      const key = n.title.trim().toLowerCase();
-      groups.set(key, [...(groups.get(key) || []), n]);
-    }
-    const dups = [...groups.values()].filter((g) => g.length > 1);
-    dupPanel.replaceChildren();
-    el("h2", "Duplicate titles", dupPanel);
-    if (!dups.length) el("p", "No duplicate titles found.", dupPanel);
-    for (const group of dups) {
-      el("p", `${group[0].title} × ${group.length}`, dupPanel, "meta");
-      button(
-        "Show",
-        async () => {
-          $("#query").value = group[0].title;
-          await render();
-        },
-        dupPanel,
-      );
-    }
-  },
-  $("#search-actions"),
-);
 const dupPanel = el("div", undefined, $("#tools"), "panel");
 dupPanel.hidden = true;
 button(
@@ -707,61 +651,6 @@ button(
         longestPanel,
       );
     }
-  },
-  $("#search-actions"),
-);
-const longestPanel = el("div", undefined, $("#tools"), "panel");
-longestPanel.hidden = true;
-button(
-  "Longest notes",
-  async () => {
-    longestPanel.hidden = !longestPanel.hidden;
-    if (longestPanel.hidden) return;
-    const words = (text) => (text || "").trim().split(/\s+/).filter(Boolean).length;
-    const top = (await allLocal())
-      .filter((n) => !n.deleted)
-      .map((n) => ({ note: n, count: words(n.body) }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-    longestPanel.replaceChildren();
-    el("h2", "Your 5 longest notes", longestPanel);
-    if (!top.length) el("p", "No notes yet.", longestPanel);
-    for (const { note, count } of top) {
-      el("p", `${note.title} — ${count} words`, longestPanel, "meta");
-      button(
-        "Show",
-        async () => {
-          $("#query").value = note.title;
-          await render();
-        },
-        longestPanel,
-      );
-    }
-  },
-  $("#search-actions"),
-);
-const linksPanel = el("div", undefined, $("#tools"), "panel");
-linksPanel.hidden = true;
-button(
-  "Saved links",
-  async () => {
-    linksPanel.hidden = !linksPanel.hidden;
-    if (linksPanel.hidden) return;
-    const linked = (await allLocal()).filter(
-      (n) => !n.deleted && /^https?:\/\//i.test(n.url || ""),
-    );
-    linksPanel.replaceChildren();
-    el("h2", `Notes with a source link (${linked.length})`, linksPanel);
-    if (!linked.length) el("p", "No notes have a source URL yet.", linksPanel);
-    for (const n of linked.slice(0, 15)) {
-      const row = el("p", undefined, linksPanel, "meta");
-      const link = el("a", n.title, row);
-      link.href = n.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-    }
-    if (linked.length > 15)
-      el("p", `…and ${linked.length - 15} more.`, linksPanel, "meta");
   },
   $("#search-actions"),
 );
@@ -963,27 +852,6 @@ $("#query").addEventListener("keydown", (event) => {
   showHistory();
 });
 showHistory();
-el(
-  "style",
-  `@page { margin: 14mm; }
-@media print {
-  h2 { font-size: 18px; margin: 0 0 6px; }
-  #tools, #workspace, #status, button, .chips { display: none !important; }
-  :root, body { background: #fff !important; color: #000 !important; }
-  article { background: #fff !important; color: #000 !important; break-inside: avoid; border: 1px solid #999; }
-}`,
-  document.head,
-);
-button(
-  "Print notes",
-  async () => {
-    const notes = await readNotes();
-    if (!notes.length) return status("Nothing to print.");
-    status(`Printing ${notes.length} note(s)…`);
-    window.print();
-  },
-  $("#search-actions"),
-);
 el(
   "style",
   `@page { margin: 14mm; }
