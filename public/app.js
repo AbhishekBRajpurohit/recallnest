@@ -12,9 +12,10 @@ import {
 let editing = null,
   editingNote = null;
 $("#workspace").innerHTML =
-  `<form id="editor"><h2 id="editor-title">Capture a thought</h2><label>Title<input name="title" required maxlength="200"></label><label>Note<textarea name="body" maxlength="50000"></textarea></label><label>Source URL<input name="url" type="url"></label><div id="extra-fields"></div><button>Save note</button><button type="button" id="cancel" class="secondary">New note</button></form>`;
+  `<form id="editor"><h2 id="editor-title">Capture a thought</h2><label>Title<input name="title" required maxlength="200"></label><label>Note<textarea name="body" maxlength="50000"></textarea><small id="body-count" class="meta"></small></label><label>Source URL<input name="url" type="url"></label><div id="extra-fields"></div><button>Save note</button><button type="button" id="cancel" class="secondary">New note</button></form>`;
 $("#extra-fields").innerHTML =
   `<div class="row"><label>Tags (comma separated)<input name="tags" maxlength="800"></label><label>Folder path<input name="folder" placeholder="College/OS/Unit 2" maxlength="200"></label><label>Collection<input name="collection" placeholder="Placement preparation" maxlength="100"></label></div>`;
+const form = $("#editor");
 form.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();
@@ -88,6 +89,15 @@ async function refreshTagOptions() {
       option.value = t;
       return option;
     }),
+  );
+}
+async function readMatchingNotes() {
+  return filterLocal(
+    await allLocal(),
+    $("#query").value,
+    $("#folder-filter").value,
+    $("#tag-filter").value,
+    $("#collection-filter").value,
   );
 }
 async function readNotes() {
@@ -259,11 +269,13 @@ button(
   "Clear filters",
   async () => {
     for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"]) {
-
-      await render();
-      $("#query").focus();
-    },
-    $("#search-actions"),
+      $("#" + id).value = "";
+    }
+    $("#date-filter").value = "0";
+    await render();
+    $("#query").focus();
+  },
+  $("#search-actions"),
 );
 
 const semanticPanel = el("div", undefined, $("#tools"), "panel");
