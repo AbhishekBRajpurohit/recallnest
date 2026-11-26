@@ -1095,6 +1095,33 @@ document.addEventListener("keydown", (event) => {
     if (edit) edit.click();
   }
 });
+const IDLE_MS = 5 * 60 * 1000;
+el(
+  "style",
+  `#notes.idle article { filter: blur(10px); user-select: none; }
+#notes.idle::before { content: "Hidden after 5 minutes idle. Move the mouse or press a key to show."; display: block; padding: 12px; }`,
+  document.head,
+);
+let autoHide = true;
+let idleTimer;
+function wake() {
+  $("#notes").classList.remove("idle");
+  clearTimeout(idleTimer);
+  if (autoHide) idleTimer = setTimeout(() => $("#notes").classList.add("idle"), IDLE_MS);
+}
+for (const type of ["mousemove", "keydown", "click", "touchstart", "scroll"])
+  window.addEventListener(type, wake, { passive: true });
+const idleButton = button(
+  "Auto-hide: on",
+  () => {
+    autoHide = !autoHide;
+    idleButton.textContent = `Auto-hide: ${autoHide ? "on" : "off"}`;
+    status(autoHide ? "Notes hide after 5 idle minutes." : "Auto-hide is off.");
+    wake();
+  },
+  $("#search-actions"),
+);
+wake();
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
