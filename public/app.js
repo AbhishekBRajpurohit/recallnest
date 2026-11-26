@@ -1122,6 +1122,26 @@ const idleButton = button(
   $("#search-actions"),
 );
 wake();
+const templates = {
+  Meeting: "Date: \nAttendees: \n\nAgenda:\n- \n\nNotes:\n\nAction items:\n- [ ] ",
+  Journal: "Today I feel: \n\nThree good things:\n1. \n2. \n3. \n\nTomorrow I will: ",
+  "To-do": "Today:\n- [ ] \n- [ ] \n- [ ] \n\nLater:\n- [ ] ",
+  "Book notes": "Author: \nKey ideas:\n- \n\nFavourite quote:\n\nWhat I will apply: ",
+};
+const templateBox = el("div", undefined, undefined, "chips");
+form.elements.namedItem("body").parentElement.after(templateBox);
+for (const [name, text] of Object.entries(templates)) {
+  const chip = button(`Template: ${name}`, () => {
+    const body = form.elements.namedItem("body");
+    const title = form.elements.namedItem("title");
+    if (body.value.trim() && !confirm("Replace what is in the editor?")) return;
+    if (!title.value.trim()) title.value = `${name} ${new Date().toLocaleDateString()}`;
+    body.value = text;
+    body.dispatchEvent(new Event("input", { bubbles: true }));
+    body.focus();
+  }, templateBox);
+  chip.className = "chip secondary";
+}
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
