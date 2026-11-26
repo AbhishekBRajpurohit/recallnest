@@ -1032,6 +1032,27 @@ button(
   },
   $("#search-actions"),
 );
+button(
+  "Find & replace",
+  () => {
+    const body = form.elements.namedItem("body");
+    if (!body.value) return status("Write something in the editor first.");
+    const find = prompt("Find (not case sensitive):");
+    if (!find) return;
+    const replacement = prompt(`Replace "${find}" with:`, "");
+    if (replacement === null) return;
+    const escaped = find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(escaped, "gi");
+    const count = (body.value.match(pattern) || []).length;
+    if (!count) return status(`"${find}" was not found in the editor.`);
+    body.value = body.value.replace(pattern, () => replacement);
+    body.dispatchEvent(new Event("input", { bubbles: true }));
+    body.focus();
+    body.setSelectionRange(0, 0);
+    status(`Replaced ${count} occurrence(s) in the editor.`);
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
