@@ -1003,6 +1003,35 @@ form.addEventListener("keydown", (event) => {
   reset();
   status("Editor cleared.");
 });
+const GOAL_KEY = "second-brain-goal";
+const goalPanel = el("div", undefined, $("#tools"), "panel");
+goalPanel.hidden = true;
+button(
+  "Daily word goal",
+  async () => {
+    goalPanel.hidden = !goalPanel.hidden;
+    if (goalPanel.hidden) return;
+    let goal = 200;
+    try { goal = Number(localStorage.getItem(GOAL_KEY)) || 200; } catch { }
+    const start = new Date().setHours(0, 0, 0, 0);
+    const words = (await allLocal())
+      .filter((n) => !n.deleted && n.updated >= start)
+      .reduce((sum, n) => sum + (n.body || "").trim().split(/\s+/).filter(Boolean).length, 0);
+    const filled = Math.round((Math.min(words, goal) / goal) * 20);
+    goalPanel.replaceChildren();
+    el("h2", "Words in notes updated today", goalPanel);
+    el("p", `${"█".repeat(filled)}${"░".repeat(20 - filled)} ${words} / ${goal}`, goalPanel);
+    el("p", words >= goal ? "Goal reached. Great work!" : `${goal - words} more words to go.`, goalPanel, "meta");
+    button("Change goal", () => {
+      const value = Math.round(Number(prompt("Words per day:", String(goal))));
+      if (!value || value < 1) return;
+      try { localStorage.setItem(GOAL_KEY, String(value)); } catch { }
+      goalPanel.hidden = true;
+      status(`Daily goal set to ${value} words.`);
+    }, goalPanel);
+  },
+  $("#search-actions"),
+);
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
