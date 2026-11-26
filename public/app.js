@@ -1074,6 +1074,27 @@ button(
   },
   $("#search-actions"),
 );
+let focusedCard = -1;
+function focusCard(step) {
+  const cards = [...$("#notes").querySelectorAll("article")];
+  if (!cards.length) return;
+  focusedCard = Math.min(cards.length - 1, Math.max(0, focusedCard + step));
+  for (const card of cards) card.style.outline = "";
+  cards[focusedCard].style.outline = "2px solid #38846b";
+  cards[focusedCard].scrollIntoView({ block: "center", behavior: "smooth" });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
+  if (event.key === "j") focusCard(1);
+  else if (event.key === "k") focusCard(-1);
+  else if (event.key === "e") {
+    const card = $("#notes").querySelectorAll("article")[focusedCard];
+    const edit =
+      card && [...card.querySelectorAll("button")].find((b) => b.textContent === "Edit");
+    if (edit) edit.click();
+  }
+});
 window.addEventListener("online", () => window.currentUser && syncNow());
 window.addEventListener("brain-ready", async () => {
   try {
