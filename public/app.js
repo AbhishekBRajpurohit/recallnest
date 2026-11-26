@@ -101,7 +101,28 @@ async function readMatchingNotes() {
     $("#collection-filter").value,
   );
 }
+const sortSelect = el("select", undefined, undefined);
+const sortChoices = [
+  ["newest", "Newest first"],
+  ["oldest", "Oldest first"],
+  ["title", "Title A–Z"],
+  ["longest", "Longest first"],
+];
+for (const [value, label] of sortChoices) el("option", label, sortSelect).value = value;
+sortSelect.title = "Sort notes";
+sortSelect.onchange = () => render().catch((e) => status(e.message));
+$("#search-actions").before(sortSelect);
 async function readNotes() {
+  const notes = [...(await readUnsortedNotes())];
+  const sorters = {
+    newest: (a, b) => b.updated - a.updated,
+    oldest: (a, b) => a.updated - b.updated,
+    title: (a, b) => a.title.localeCompare(b.title),
+    longest: (a, b) => (b.body || "").length - (a.body || "").length,
+  };
+  return notes.sort(sorters[sortSelect.value]);
+}
+async function readUnsortedNotes() {
   const days = Number($("#date-filter").value);
   const sortOrder = $("#sort-order").value;
   let notes = await readMatchingNotes();
