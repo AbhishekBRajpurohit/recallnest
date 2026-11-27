@@ -753,36 +753,53 @@ button(
   },
   $("#search-actions"),
 );
-const folderPanel = el("div", undefined, $("#tools"), "panel");
-folderPanel.hidden = true;
-button(
-  "Browse folders",
-  async () => {
-    folderPanel.hidden = !folderPanel.hidden;
-    if (folderPanel.hidden) return;
-    const counts = new Map();
-    for (const n of await allLocal()) {
-      if (n.deleted) continue;
-      const folder = n.folder || "(no folder)";
-      counts.set(folder, (counts.get(folder) || 0) + 1);
-    }
-    folderPanel.replaceChildren();
-    el("h2", "Browse by folder", folderPanel);
-    const chips = el("div", undefined, folderPanel, "chips");
-    for (const [folder, count] of [...counts].sort()) {
-      const chip = button(
-        `${folder} (${count})`,
-        async () => {
-          $("#folder-filter").value = folder === "(no folder)" ? "" : folder;
-          await render();
-        },
-        chips,
-      );
-      chip.className = "chip secondary";
-    }
-  },
-  $("#search-actions"),
-);
+function addGroupBrowser({ buttonLabel, heading, emptyLabel, getGroup, inputSelector }) {
+  const panel = el("div", undefined, $("#tools"), "panel");
+  panel.hidden = true;
+  button(
+    buttonLabel,
+    async () => {
+      panel.hidden = !panel.hidden;
+      if (panel.hidden) return;
+      const counts = new Map();
+      for (const n of await allLocal()) {
+        if (n.deleted) continue;
+        const group = getGroup(n) || emptyLabel;
+        counts.set(group, (counts.get(group) || 0) + 1);
+      }
+      panel.replaceChildren();
+      el("h2", heading, panel);
+      if (!counts.size) return el("p", "No notes yet.", panel);
+      const chips = el("div", undefined, panel, "chips");
+      for (const [group, count] of [...counts].sort()) {
+        const chip = button(
+          `${group} (${count})`,
+          async () => {
+            $(inputSelector).value = group === emptyLabel ? "" : group;
+            await render();
+          },
+          chips,
+        );
+        chip.className = "chip secondary";
+      }
+    },
+    $("#search-actions"),
+  );
+}
+addGroupBrowser({
+  buttonLabel: "Browse folders",
+  heading: "Browse by folder",
+  emptyLabel: "(no folder)",
+  getGroup: (n) => n.folder,
+  inputSelector: "#folder-filter",
+});
+addGroupBrowser({
+  buttonLabel: "Browse collections",
+  heading: "Browse by collection",
+  emptyLabel: "(no collection)",
+  getGroup: (n) => n.collection,
+  inputSelector: "#collection-filter",
+});
 const topButton = button(
   "↑ Top",
   () => window.scrollTo({ top: 0, behavior: "smooth" }),
