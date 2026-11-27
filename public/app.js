@@ -67,7 +67,7 @@ try {
   }
 } catch { }
 $("#tools").innerHTML =
-  `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><div class="row"><label>Updated<select id="date-filter"><option value="0">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></label><label>Sort by<select id="sort-order"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title (A-Z)</option></select></label></div><div id="search-actions"></div></div>`;
+  `<div class="panel"><label>Search your knowledge<input id="query" placeholder="Search words…"></label><div class="row"><label>Folder and descendants<input id="folder-filter"></label><label>Tag<input id="tag-filter"></label><label>Collection<input id="collection-filter"></label></div><div class="row"><label>Updated<select id="date-filter"><option value="0">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></label><label>Sort by<select id="sort-order"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title (A-Z)</option><option value="longest">Longest first</option></select></label></div><div id="search-actions"></div></div>`;
 for (const id of ["query", "folder-filter", "tag-filter", "collection-filter"])
   $("#" + id).oninput = () => render().catch((e) => status(e.message));
 $("#date-filter").onchange = () => render().catch((e) => status(e.message));
@@ -101,42 +101,20 @@ async function readMatchingNotes() {
     $("#collection-filter").value,
   );
 }
-const sortSelect = el("select", undefined, undefined);
-const sortChoices = [
-  ["newest", "Newest first"],
-  ["oldest", "Oldest first"],
-  ["title", "Title A–Z"],
-  ["longest", "Longest first"],
-];
-for (const [value, label] of sortChoices) el("option", label, sortSelect).value = value;
-sortSelect.title = "Sort notes";
-sortSelect.onchange = () => render().catch((e) => status(e.message));
-$("#search-actions").before(sortSelect);
 async function readNotes() {
-  const notes = [...(await readUnsortedNotes())];
+  const days = Number($("#date-filter").value);
+  let notes = await readMatchingNotes();
+  if (days) {
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    notes = notes.filter((n) => n.updated >= cutoff);
+  }
   const sorters = {
     newest: (a, b) => b.updated - a.updated,
     oldest: (a, b) => a.updated - b.updated,
     title: (a, b) => a.title.localeCompare(b.title),
     longest: (a, b) => (b.body || "").length - (a.body || "").length,
   };
-  return notes.sort(sorters[sortSelect.value]);
-}
-async function readUnsortedNotes() {
-  const days = Number($("#date-filter").value);
-  const sortOrder = $("#sort-order").value;
-  let notes = await readMatchingNotes();
-  if (days) {
-    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-    notes = notes.filter((n) => n.updated >= cutoff);
-  }
-  if (sortOrder === "oldest") {
-    return [...notes].sort((a, b) => a.updated - b.updated);
-  }
-  if (sortOrder === "title") {
-    return [...notes].sort((a, b) => a.title.localeCompare(b.title));
-  }
-  return notes;
+  return [...notes].sort(sorters[$("#sort-order").value] || sorters.newest);
 }
 
 async function writeNote(note) {
