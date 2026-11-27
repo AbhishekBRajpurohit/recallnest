@@ -101,6 +101,28 @@ async function readMatchingNotes() {
     $("#collection-filter").value,
   );
 }
+const PINNED_KEY = "second-brain-pinned";
+function loadPinnedIds() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(PINNED_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+function savePinnedIds(ids) {
+  try {
+    localStorage.setItem(PINNED_KEY, JSON.stringify([...ids]));
+  } catch { }
+}
+async function togglePin(note) {
+  const pinned = loadPinnedIds();
+  const next = !pinned.has(note.id);
+  if (next) pinned.add(note.id);
+  else pinned.delete(note.id);
+  savePinnedIds(pinned);
+  await render();
+  status(`${next ? "Pinned" : "Unpinned"} "${note.title}".`);
+}
 async function readNotes() {
   const days = Number($("#date-filter").value);
   let notes = await readMatchingNotes();
@@ -108,13 +130,17 @@ async function readNotes() {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
     notes = notes.filter((n) => n.updated >= cutoff);
   }
+  const pinned = loadPinnedIds();
   const sorters = {
     newest: (a, b) => b.updated - a.updated,
     oldest: (a, b) => a.updated - b.updated,
     title: (a, b) => a.title.localeCompare(b.title),
     longest: (a, b) => (b.body || "").length - (a.body || "").length,
   };
-  return [...notes].sort(sorters[$("#sort-order").value] || sorters.newest);
+  const sortFn = sorters[$("#sort-order").value] || sorters.newest;
+  return [...notes].sort(
+    (a, b) => Number(pinned.has(b.id)) - Number(pinned.has(a.id)) || sortFn(a, b),
+  );
 }
 
 async function writeNote(note) {
@@ -153,9 +179,12 @@ export async function render() {
   noteCount.textContent =
     `${notes.length} ${notes.length === 1 ? "note" : "notes"} shown`;
 
+  const pinned = loadPinnedIds();
   $("#notes").replaceChildren();
   for (const n of notes) {
-    const card = el("article", undefined, $("#notes"));
+    const isPinned = pinned.has(n.id);
+    const card = el("article", undefined, $("#notes"), isPinned ? "pinned" : "");
+    if (isPinned) el("span", "Pinned", card, "badge");
     highlight(el("h2", undefined, card), n.title);
     highlight(el("p", undefined, card), n.body);
     if (n.summary) {
@@ -215,6 +244,11 @@ export async function render() {
         await navigator.clipboard.writeText(`${n.title}\n\n${n.body}`);
         status(`Copied "${n.title}" to the clipboard.`);
       },
+      card,
+    );
+    button(
+      isPinned ? "Unpin" : "Pin",
+      () => togglePin(n),
       card,
     );
     button(
