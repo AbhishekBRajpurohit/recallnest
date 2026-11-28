@@ -1,5 +1,7 @@
 chrome.action.onClicked.addListener(async (tab) => {
   try {
+    await chrome.action.setBadgeText({ text: "" });
+    await chrome.action.setTitle({ title: "Capture to Second Brain" });
     if (!/^https?:\/\//.test(tab.url || ""))
       throw Error("Open a normal webpage first");
     const [{ result }] = await chrome.scripting.executeScript({
